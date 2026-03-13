@@ -14,6 +14,7 @@ class BaseBook(BaseModel):
     title: str
     author: str
     year: int
+    seller_id: int
 
 
 # Класс для обработки входных данных для частичного обновления данных о книге
