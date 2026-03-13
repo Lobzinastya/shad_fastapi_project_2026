@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.sellers import Seller
 from src.schemas.sellers import IncomingSeller, PatchSeller, ReturnedSeller
-
+from sqlalchemy.orm import selectinload
 
 class SellerService:
     def __init__(self, session: AsyncSession) -> None:
@@ -31,12 +31,13 @@ class SellerService:
     async def delete_seller(self, seller_id: int) -> bool:
         seller = await self.session.get(Seller, seller_id)
 
-        if seller:
-            await self.session.delete(seller)
-            return True
-
-        else:
+        if not seller:
             return False
+
+        await self.session.delete(seller)
+        await self.session.commit()
+
+        return True
 
     async def update_seller(self, seller_id: int, new_seller_data: ReturnedSeller) -> Seller | None:
 
@@ -64,11 +65,14 @@ class SellerService:
             return seller
 
     async def get_single_seller(self, seller_id: int) -> Seller | None:
-        return await self.session.get(Seller, seller_id)
+        query = select(Seller).options(selectinload(Seller.books)).where(Seller.id == seller_id)
+        result = await self.session.execute(query)
+
+        return result.scalar_one_or_none()
 
     async def get_all_sellers(self) -> list[Seller]:
 
-        query = select(Seller)
+        query = select(Seller).options(selectinload(Seller.books))
         result = await self.session.execute(query)
 
         return result.scalars().all()

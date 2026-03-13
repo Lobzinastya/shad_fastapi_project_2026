@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from pydantic_core import PydanticCustomError
 
 __all__ = [
@@ -14,7 +14,7 @@ class BaseBook(BaseModel):
     title: str
     author: str
     year: int
-    seller_id: int
+    seller_id: int # добавлено
 
 
 # Класс для обработки входных данных для частичного обновления данных о книге
@@ -23,6 +23,7 @@ class PatchBook(BaseModel):
     author: str | None = None
     year: int | None = None
     pages: int | None = None
+    seller_id: int | None = None #
 
 
 # Класс для валидации входящих данных. Не содержит id так как его присваивает БД.
@@ -45,6 +46,7 @@ class ReturnedBook(BaseBook):  # {"id": 1, "title": "Clean Code", ....}
     id: int
     pages: int
 
+    model_config = ConfigDict(from_attributes=True)
 
 # Класс для возврата массива объектов "Книга"
 class ReturnedAllBooks(BaseModel):

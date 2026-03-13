@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.configurations.database import get_async_session
-from src.schemas import IncomingSeller, PatchSeller, ReturnedAllSellers, ReturnedSeller
+from src.schemas import (
+    IncomingSeller,
+    PatchSeller,
+    ReturnedAllSellers,
+    ReturnedSeller,
+    ReturnedSellerWithBooks,
+)
 from src.services import SellerService
 
 sellers_router = APIRouter(prefix="/seller", tags=["seller"])
@@ -25,7 +31,7 @@ async def create_seller(seller: IncomingSeller, session: DBSession):
     return new_seller
 
 
-@sellers_router.get("/{seller_id}", response_model=ReturnedSeller)
+@sellers_router.get("/{seller_id}", response_model=ReturnedSellerWithBooks)
 async def get_single_seller(seller_id: int, session: DBSession):
     seller = await SellerService(session).get_single_seller(seller_id)
 

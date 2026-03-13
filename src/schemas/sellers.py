@@ -1,9 +1,11 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
+from .books import ReturnedBook
 
 __all__ = [
     "PatchSeller",
     "IncomingSeller",
     "ReturnedSeller",
+    "ReturnedSellerWithBooks",
     "ReturnedAllSellers",
 ]
 
@@ -27,13 +29,29 @@ class IncomingSeller(BaseSeller):
     password: str
 
 
-# Класс, валидирующий исходящие данные. содержит id
-class ReturnedSeller(BaseSeller):  # {"id": 1, "first_name": "...", ...}
+# # Класс, валидирующий исходящие данные. содержит id
+# # Возвращаемый продавец (без password)
+# class ReturnedSeller(BaseSeller):
+#     id: int
+#     books: list["ReturnedBook"] = []
+#
+#     model_config = ConfigDict(from_attributes=True)
+#
+# # Класс для возврата массива объектов "Продавец"
+# class ReturnedAllSellers(BaseModel):
+#     sellers: list[ReturnedSeller]
+#
+# ReturnedSeller.model_rebuild()
+
+
+class ReturnedSeller(BaseSeller):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-# Класс для возврата массива объектов "Продавец"
+class ReturnedSellerWithBooks(ReturnedSeller):
+    books: list[ReturnedBook] = []
+
+
 class ReturnedAllSellers(BaseModel):
     sellers: list[ReturnedSeller]

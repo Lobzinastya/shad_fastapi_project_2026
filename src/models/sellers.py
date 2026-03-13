@@ -11,7 +11,13 @@ class Seller(BaseModel):
 
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
-    e_mail: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    e_mail: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index = True)
     password: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    books = relationship("Book", back_populates="seller")
+    # books = relationship("Book", back_populates="seller")
+    books: Mapped[list["Book"]] = relationship("Book",
+                                               back_populates="seller",
+                                               cascade="all, delete-orphan",
+                                               lazy = 'selectin',
+                                               passive_deletes=True
+                                               )

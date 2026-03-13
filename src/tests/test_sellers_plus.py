@@ -169,3 +169,148 @@ async def test_seller_books_relation(db_session):
     res = await db_session.get(Book, book.id)
 
     assert res.seller_id == seller.id
+
+    @pytest.mark.asyncio()
+    async def test_get_seller_with_books(db_session, async_client):
+        seller = Seller(
+            first_name="Ivan",
+            last_name="Ivanov",
+            e_mail="test@test.com",
+            password="1234"
+        )
+
+        db_session.add(seller)
+        await db_session.flush()
+
+        book = Book(
+            title="Test Book",
+            author="Pushkin",
+            pages=100,
+            year=2024,
+            seller_id=seller.id
+        )
+
+        db_session.add(book)
+        await db_session.flush()
+
+        response = await async_client.get(f"/api/v1/seller/{seller.id}")
+
+        data = response.json()
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(data["books"]) == 1
+        assert data["books"][0]["title"] == "Test Book"
+
+
+@pytest.mark.asyncio()
+async def test_get_seller_with_books(db_session, async_client):
+
+    seller = Seller(
+        first_name="Ivan",
+        last_name="Ivanov",
+        e_mail="test@test.com",
+        password="1234"
+    )
+
+    db_session.add(seller)
+    await db_session.flush()
+
+    book = Book(
+        title="Test Book",
+        author="Pushkin",
+        pages=100,
+        year=2024,
+        seller_id=seller.id
+    )
+
+    db_session.add(book)
+    await db_session.flush()
+
+    response = await async_client.get(f"/api/v1/seller/{seller.id}")
+
+    data = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(data["books"]) == 1
+    assert data["books"][0]["title"] == "Test Book"
+
+
+@pytest.mark.asyncio()
+async def test_seller_password_not_returned(async_client):
+
+    data = {
+        "first_name": "Ivan",
+        "last_name": "Ivanov",
+        "e_mail": "test@test.com",
+        "password": "1234"
+    }
+
+    response = await async_client.post("/api/v1/seller/", json=data)
+
+    result = response.json()
+
+    assert "password" not in result
+
+
+@pytest.mark.asyncio()
+async def test_book_requires_seller(async_client):
+
+    data = {
+        "title": "Test Book",
+        "author": "Pushkin",
+        "count_pages": 100,
+        "year": 2024
+    }
+
+    response = await async_client.post("/api/v1/books/", json=data)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+@pytest.mark.asyncio()
+async def test_book_requires_seller(async_client):
+
+    data = {
+        "title": "Test Book",
+        "author": "Pushkin",
+        "count_pages": 100,
+        "year": 2024
+    }
+
+    response = await async_client.post("/api/v1/books/", json=data)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+
+@pytest.mark.asyncio()
+async def test_delete_seller_cascade_books(db_session, async_client):
+
+    seller = Seller(
+        first_name="Ivan",
+        last_name="Ivanov",
+        e_mail="test@test.com",
+        password="1234"
+    )
+
+    db_session.add(seller)
+    await db_session.flush()
+
+    book = Book(
+        title="Test Book",
+        author="Pushkin",
+        pages=100,
+        year=2024,
+        seller_id=seller.id
+    )
+
+    db_session.add(book)
+    await db_session.commit()
+
+    response = await async_client.delete(f"/api/v1/seller/{seller.id}")
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    books = await db_session.execute(select(Book))
+    res = books.scalars().all()
+
+    assert len(res) == 0
