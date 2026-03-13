@@ -8,6 +8,7 @@ from src.models.sellers import Seller
 
 API_V1_URL_PREFIX = "/api/v1/books"
 
+# ВСЕ тесты, которые уже были, скорректированные, чтобы работали с Seller (немножко dumb способ добавленя seller)
 
 # Тест на ручку создающую книгу
 @pytest.mark.asyncio()
@@ -58,7 +59,7 @@ async def test_create_book_with_old_year(db_session, async_client):
     }
     response = await async_client.post(f"{API_V1_URL_PREFIX}/", json=data)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 # Тест на ручку получения списка книг

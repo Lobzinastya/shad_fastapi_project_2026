@@ -8,6 +8,9 @@ from src.models.sellers import Seller
 from src.schemas.sellers import IncomingSeller, PatchSeller, ReturnedSeller
 from sqlalchemy.orm import selectinload
 
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+
 class SellerService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -24,7 +27,13 @@ class SellerService:
         )
 
         self.session.add(new_seller)
-        await self.session.flush()
+        try:
+            await self.session.flush()
+        except IntegrityError:
+            raise HTTPException(
+            status_code=409,
+            detail="Seller with this email already exists"
+        )
 
         return new_seller
 
