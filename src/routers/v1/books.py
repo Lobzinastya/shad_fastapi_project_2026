@@ -21,7 +21,8 @@ async def get_all_books(session: DBSession):
 @books_router.post("/", response_model=ReturnedBook, status_code=status.HTTP_201_CREATED)
 async def create_book(book: IncomingBook, session: DBSession):
     new_book = await BookService(session).add_book(book)
-
+    if new_book is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
     return new_book
 
 
